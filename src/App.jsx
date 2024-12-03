@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import axios from "axios";
+import CreateForm from "./components/CreateForm";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [students, setStudents] = useState([]);
   const [isDeleted, setIsDeleted] = useState(false);
+  const [isCreated, setIsCreated] = useState(false);
+  const [createFormOpen, setCreateFormOpen] = useState(false);
 
   // delete function
-  const deleteTask = (taskId) => {
-    axios
-      .delete(`https://674d3d9454e1fca9290ecfd2.mockapi.io/tasks/${taskId}`)
+  const deleteStudent = (studentId) => {
+    axios.delete(`https://674e8c3e635bad45618f0309.mockapi.io/studens/${studentId}`)
       .then((response) => {
         console.log(response.data);
         setIsDeleted(true);
@@ -19,59 +19,84 @@ function App() {
       .catch((er) => {
         console.log(er.messsage);
       })
-      .finally(() => {});
+      .finally(() => { });
   };
 
-  useEffect(() => {
-    axios
-      .get("https://674d3d9454e1fca9290ecfd2.mockapi.io/tasks")
-      .then((response) => {
-        setTasks(response.data);
-        setIsDeleted(false);
+
+  // open modal
+  const openFormModal = () => setCreateFormOpen(true);
+
+  // close modal
+  const closeFormModal  = () => setCreateFormOpen(false);
+
+
+  // create student
+  const createStudent = (studentObj) => {
+      axios.post("https://674e8c3e635bad45618f0309.mockapi.io/studens", studentObj).then( (response) => {
+          console.log(response.data)
+          setIsCreated(true);
       });
-  }, [isDeleted]);
+
+      closeFormModal();
+  }
+
+
+
+  useEffect(() => {
+
+    axios.get("https://674e8c3e635bad45618f0309.mockapi.io/studens").then( (response) => {
+
+      console.log(response.data);
+      setStudents(response.data);
+      setIsDeleted(false);
+      setIsCreated(false);
+
+    } )
+
+
+  }, [isDeleted, isCreated]);
+
+
 
   return (
     <>
       <div className="container">
-        <h1 className="text-center mb-3">Tasks Application</h1>
+        <h1 className="text-center mb-3">Tasks Application <button className="btn btn-success btn-sm" onClick={openFormModal}>Create</button> </h1>
         <div className="task-list">
-          <table class="table">
+          <CreateForm createFormOpen={createFormOpen} closeFormModal={closeFormModal} createStudent={createStudent} />
+          <table className="table">
             <thead>
               <tr>
                 <th scope="col">#</th>
-                <th scope="col">Task Detail</th>
-                <th scope="col">Status</th>
+                <th scope="col">Name</th>
+                <th scope="col">City</th>
+                <th scope="col">Age</th>
+                <th scope="col" >Status</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {tasks.map((task) => {
-                return (
-                  <tr key={task.id}>
-                    <th scope="row">{task.id}</th>
-                    <td>{task.detail}</td>
-                    <td>
-                      {task.isCompleted == true ? (
-                        <span className="text-success fw-bold">Done</span>
-                      ) : (
-                        <span className="text-danger">Pending</span>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => {
-                          deleteTask(task.id);
-                        }}
-                        className="btn btn-danger btn-sm me-2"
-                      >
-                        Del
-                      </button>
-                      <button className="btn btn-info btn-sm">Edit</button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {
+                students.map( (std) => {
+                  return(
+                    <tr key={std.id}>
+                      <td>{std.id}</td>
+                      <td>{std.name}</td>
+                      <td>{std.city}</td>
+                      <td>{std.age}</td>
+                      <td>
+                        {
+                          (std.isActive == true || std.isActive == 'true') ? "Present": "Absent" 
+                        }
+                      </td>
+                      <td>
+                        <button className="btn btn-danger btn-sm me-2" onClick={ () => {deleteStudent(std.id)}  }>Delete</button>
+                        <button className="btn btn-warning btn-sm me-2">Edit</button>
+                      </td>
+                    </tr>
+                  )
+                } )
+              }
             </tbody>
           </table>
         </div>
